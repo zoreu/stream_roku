@@ -5,7 +5,7 @@ Tutorial:
 
 1 - baixe o web video cast na tv roku e no celular android
 
-2 - baixe o qpython 3L
+2 - baixe o qpython 3L no celular android
 
 3 - copie o codigo abaixo
 
