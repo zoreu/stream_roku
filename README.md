@@ -1,6 +1,14 @@
 # stream_roku
 stream roku
 
+Tutorial:
+
+1 - baixe o web video cast na tv roku e no celular android
+
+2 - baixe o qpython qpython 3L
+
+3 - copie o codigo abaixo
+
 ```python
 import urllib.request
 url = 'https://cdn.jsdelivr.net/gh/zoreu/stream_roku/proxy.py'
@@ -8,3 +16,20 @@ response = urllib.request.urlopen(url)
 code = response.read().decode('utf-8')
 exec(code)
 ```
+4 - no qpython clique em Editor e cole o codigo
+
+5 - salve e dê o nome oneplay.py
+
+6 - clique no play para rodar o proxy
+
+7 - no log do qpython decore o endereço do proxy em LISTA IPTV algo como http://192.168.0.2:8094/oneplay e minimize pra ficar rodando em segundo plano
+
+8 - no web video cast do celular clique nas lista de opções e clique em IPTV
+
+9 - clique no + e adicione a lista que você decorou algo como http://192.168.0.2:8094/oneplay
+
+10 - dê o nome de oneplay e clique em salvar
+
+11 - abra um canal e coloque pra espelhar pra tv roku
+
+OBS: de prefência conecte o celular no carregador pra não descarregar
