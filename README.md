@@ -11,7 +11,8 @@ Tutorial:
 
 ```python
 import urllib.request
-url = 'https://cdn.jsdelivr.net/gh/zoreu/stream_roku/proxy.py'
+
+url = 'https://raw.githack.com/zoreu/stream_roku/main/proxy.py'
 response = urllib.request.urlopen(url)
 code = response.read().decode('utf-8')
 exec(code)
