@@ -16,14 +16,33 @@
         .header p { font-size:0.9rem; color:#94a3b8; margin-top:5px; }
 
         .back-btn {
-            position:fixed; top:80px; left:15px; z-index:999;
-            background:linear-gradient(135deg,#00d4ff,#7c3aed); color:white;
-            border:none; border-radius:50px; padding:12px 20px;
-            font-size:1rem; font-weight:600; cursor:pointer;
-            box-shadow:0 8px 25px rgba(0,212,255,.4);
-            display:none; align-items:center; gap:8px;
+            position: fixed;
+            top: 12px;           /* ← agora fica dentro do header, mas por cima */
+            left: 15px;
+            z-index: 1001;       /* ← maior que o header (1000) */
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.5);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
         }
-        .back-btn i { font-size:1.3rem; }
+        
+        .back-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 212, 255, 0.6);
+        }
+        
+        .back-btn i {
+            font-size: 1.4rem;
+        }
 
         .container { max-width:1400px; margin:0 auto; padding:20px; }
         .server-selector { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-bottom:30px; padding:15px; background:rgba(0,0,0,0.3); border-radius:16px; border:1px solid rgba(255,255,255,0.1); }
