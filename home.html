@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OnePlay IPTV</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>TV</text></svg>">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        :root { --bg:#0f0f1e; --card:#1a1a2e; --accent:#00d4ff; --text:#e0e0ff; --text-muted:#94a3b8; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#0f0f1e,#16213e); color:var(--text); min-height:100vh; }
+        .header { background:rgba(0,0,0,0.6); backdrop-filter:blur(10px); padding:15px; text-align:center; position:fixed; top:0; left:0; right:0; z-index:1000; border-bottom:1px solid rgba(255,255,255,0.1); }
+        .header h1 { font-size:1.8rem; background:linear-gradient(90deg,#00d4ff,#7c3aed); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .container { margin-top:80px; padding:20px; max-width:1400px; margin:auto; }
+        .server-selector { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:30px; }
+        .server-btn { padding:12px 20px; background:var(--card); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:white; cursor:pointer; transition:all .3s; min-width:60px; text-align:center; }
+        .server-btn.active,.server-btn:hover { background:linear-gradient(135deg,#00d4ff,#7c3aed); transform:translateY(-3px); box-shadow:0 10px 20px rgba(0,212,255,.3); }
+        .categories { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:15px; margin-bottom:30px; }
+        .category { background:var(--card); padding:20px; border-radius:16px; text-align:center; cursor:pointer; transition:all .3s; border:1px solid rgba(255,255,255,0.1); }
+        .category:hover { transform:translateY(-8px); background:rgba(0,212,255,.1); }
+        .category i { font-size:2.5rem; margin-bottom:10px; }
+        .channels-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:20px; }
+        .channel-card { background:var(--card); border-radius:16px; overflow:hidden; cursor:pointer; transition:all .3s; border:1px solid rgba(255,255,255,0.1); }
+        .channel-card:hover { transform:scale(1.05); box-shadow:0 15px 30px rgba(0,212,255,.2); }
+        .channel-logo { width:100%; height:120px; object-fit:contain; background:#000; padding:10px; }
+        .channel-name { padding:12px; text-align:center; font-weight:600; font-size:.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+        .player-container { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.95); z-index:9999; display:none; flex-direction:column; }
+        .player-header { padding:15px; background:rgba(0,0,0,.7); display:flex; justify-content:space-between; align-items:center; }
+        .close-player { background:none; border:none; color:white; font-size:2rem; cursor:pointer; }
+        #iptv-video { width:100%; height:calc(100vh - 70px); background:black; }
+        .loading { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:1.5rem; color:#00d4ff; }
+
+        @media (max-width:768px) { 
+            .categories { grid-template-columns:repeat(3,1fr) }
+            .channels-grid { grid-template-columns:repeat(2,1fr) }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>OnePlay IPTV</h1>
+        <p>Selecione uma lista para começar</p>
+    </div>
+
+    <div class="container">
+        <div class="server-selector" id="serverSelector"></div>
+        <div id="categories" class="categories" style="display:none;"></div>
+        <div id="channels" class="channels-grid" style="display:none;"></div>
+    </div>
+
+    <div id="playerContainer" class="player-container">
+        <div class="player-header">
+            <span id="playingChannel">Carregando...</span>
+            <button class="close-player" onclick="closePlayer()">×</button>
+        </div>
+
+        <video id="iptv-video" controls playsinline></video>
+        <div class="loading" id="loading">Carregando stream...</div>
+    </div>
+
+    <script>
+        const proxyHost = "{{PROXY_HOST}}";
+    </script>
+
+    <script src="app.js"></script>
+</body>
+</html>
