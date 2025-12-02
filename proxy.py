@@ -4,6 +4,7 @@ Proxy HTTP com DNS Customizado para QPython/Android
 Python 3.6+ - Sem dependências externas
 Versão LAN - Acessível de outros dispositivos na rede
 DEBUG VERSION - Logging detalhado
+COM PLAYER HLS INTEGRADO
 """
 
 import json
@@ -30,6 +31,13 @@ ONEPLAY_LISTS = {
     'lista01': '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x6f\x6e\x65\x70\x6c\x61\x79\x68\x64\x2e\x63\x6f\x6d\x2f\x6c\x69\x73\x74\x61\x73\x5f\x6f\x6e\x65\x70\x6c\x61\x79\x2f\x6c\x69\x73\x74\x61\x30\x31\x2e\x74\x78\x74',
     'lista02': '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x6f\x6e\x65\x70\x6c\x61\x79\x68\x64\x2e\x63\x6f\x6d\x2f\x6c\x69\x73\x74\x61\x73\x5f\x6f\x6e\x65\x70\x6c\x61\x79\x2f\x6c\x69\x73\x74\x61\x30\x32\x2e\x74\x78\x74',
     'lista03': '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x6f\x6e\x65\x70\x6c\x61\x79\x68\x64\x2e\x63\x6f\x6d\x2f\x6c\x69\x73\x74\x61\x73\x5f\x6f\x6e\x65\x70\x6c\x61\x79\x2f\x6c\x69\x73\x74\x61\x30\x33\x2e\x74\x78\x74',
+    'lista04': '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x6f\x6e\x65\x70\x6c\x61\x79\x68\x64\x2e\x63\x6f\x6d\x2f\x6c\x69\x73\x74\x61\x73\x5f\x6f\x6e\x65\x70\x6c\x61\x79\x2f\x6c\x69\x73\x74\x61\x30\x34\x2e\x74\x78\x74',
+    'lista05': '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x6f\x6e\x65\x70\x6c\x61\x79\x68\x64\x2e\x63\x6f\x6d\x2f\x6c\x69\x73\x74\x61\x73\x5f\x6f\x6e\x65\x70\x6c\x61\x79\x2f\x6c\x69\x73\x74\x61\x30\x35\x2e\x74\x78\x74',
+    'lista06': '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x6f\x6e\x65\x70\x6c\x61\x79\x68\x64\x2e\x63\x6f\x6d\x2f\x6c\x69\x73\x74\x61\x73\x5f\x6f\x6e\x65\x70\x6c\x61\x79\x2f\x6c\x69\x73\x74\x61\x30\x36\x2e\x74\x78\x74',
+    'lista07': '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x6f\x6e\x65\x70\x6c\x61\x79\x68\x64\x2e\x63\x6f\x6d\x2f\x6c\x69\x73\x74\x61\x73\x5f\x6f\x6e\x65\x70\x6c\x61\x79\x2f\x6c\x69\x73\x74\x61\x30\x37\x2e\x74\x78\x74',
+    'lista08': '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x6f\x6e\x65\x70\x6c\x61\x79\x68\x64\x2e\x63\x6f\x6d\x2f\x6c\x69\x73\x74\x61\x73\x5f\x6f\x6e\x65\x70\x6c\x61\x79\x2f\x6c\x69\x73\x74\x61\x30\x38\x2e\x74\x78\x74',
+    'lista09': '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x6f\x6e\x65\x70\x6c\x61\x79\x68\x64\x2e\x63\x6f\x6d\x2f\x6c\x69\x73\x74\x61\x73\x5f\x6f\x6e\x65\x70\x6c\x61\x79\x2f\x6c\x69\x73\x74\x61\x30\x39\x2e\x74\x78\x74',
+    'lista10': '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x6f\x6e\x65\x70\x6c\x61\x79\x68\x64\x2e\x63\x6f\x6d\x2f\x6c\x69\x73\x74\x61\x73\x5f\x6f\x6e\x65\x70\x6c\x61\x79\x2f\x6c\x69\x73\x74\x61\x31\x30\x2e\x74\x78\x74'
 }
 DEFAULT_ONEPLAY_LIST = '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x6f\x6e\x65\x70\x6c\x61\x79\x68\x64\x2e\x63\x6f\x6d\x2f\x6c\x69\x73\x74\x61\x73\x5f\x6f\x6e\x65\x70\x6c\x61\x79\x2f\x6c\x69\x73\x74\x61\x30\x31\x2e\x74\x78\x74'
 
@@ -43,7 +51,6 @@ LOCAL_IP = None
 LOG_ = False
 
 # ============== LOGGING DETALHADO ==============
-# Criar logger com nível DEBUG
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s [%(levelname)s] %(funcName)s:%(lineno)d - %(message)s',
@@ -53,31 +60,573 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Função helper para log detalhado
 def log_debug(msg):
-    """Log com informação de thread"""
     if LOG_:
         thread_name = threading.current_thread().name
         logger.debug(f"[{thread_name}] {msg}")
 
 def log_info(msg):
-    """Log info com thread"""
     if LOG_:
         thread_name = threading.current_thread().name
         logger.info(f"[{thread_name}] {msg}")
 
 def log_error(msg):
-    """Log error com thread"""
     if LOG_:
         thread_name = threading.current_thread().name
         logger.error(f"[{thread_name}] {msg}")
 
 def log_exception(msg):
-    """Log exception com traceback completo"""
     if LOG_:
         thread_name = threading.current_thread().name
         logger.error(f"[{thread_name}] {msg}")
         logger.error(traceback.format_exc())
+
+
+# ============== TEMPLATE HTML DO PLAYER ==============
+def get_player_html(proxy_host, m3u8_url):
+    """Gera o HTML do player HLS"""
+    
+    # URL do M3U8 através do proxy
+    proxied_url = f"http://{proxy_host}/hlsretry?url={quote(m3u8_url)}"
+    
+    html = f'''<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎬 OnePlay Player</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            min-height: 100vh;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }}
+        
+        .header {{
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }}
+        
+        .header h1 {{
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }}
+        
+        .header p {{
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }}
+        
+        .player-container {{
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }}
+        
+        .video-wrapper {{
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background: #000;
+        }}
+        
+        #video {{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }}
+        
+        .controls {{
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+        }}
+        
+        .url-display {{
+            background: rgba(0, 0, 0, 0.4);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.75rem;
+            color: #67e8f9;
+            word-break: break-all;
+            margin-bottom: 15px;
+            border: 1px solid rgba(103, 232, 249, 0.2);
+        }}
+        
+        .url-label {{
+            color: #94a3b8;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            display: block;
+        }}
+        
+        .btn-group {{
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }}
+        
+        .btn {{
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }}
+        
+        .btn-play {{
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }}
+        
+        .btn-play:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }}
+        
+        .btn-fullscreen {{
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+        }}
+        
+        .btn-fullscreen:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }}
+        
+        .btn-reload {{
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }}
+        
+        .btn-reload:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+        }}
+        
+        .status {{
+            margin-top: 15px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }}
+        
+        .status.loading {{
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+        }}
+        
+        .status.playing {{
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+        }}
+        
+        .status.error {{
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }}
+        
+        .spinner {{
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }}
+        
+        @keyframes spin {{
+            to {{ transform: rotate(360deg); }}
+        }}
+        
+        .stats {{
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }}
+        
+        .stat-item {{
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }}
+        
+        .stat-value {{
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #67e8f9;
+        }}
+        
+        .stat-label {{
+            font-size: 0.7rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }}
+        
+        .footer {{
+            margin-top: 30px;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.8rem;
+        }}
+        
+        .footer a {{
+            color: #67e8f9;
+            text-decoration: none;
+        }}
+        
+        /* Mobile adjustments */
+        @media (max-width: 640px) {{
+            body {{
+                padding: 10px;
+            }}
+            
+            .header h1 {{
+                font-size: 1.5rem;
+            }}
+            
+            .controls {{
+                padding: 15px;
+            }}
+            
+            .btn {{
+                padding: 10px 16px;
+                font-size: 0.85rem;
+            }}
+        }}
+        
+        /* Input para URL manual */
+        .url-input-container {{
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }}
+        
+        .url-input {{
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }}
+        
+        .url-input:focus {{
+            outline: none;
+            border-color: #67e8f9;
+        }}
+        
+        .url-input::placeholder {{
+            color: #64748b;
+        }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎬 OnePlay HLS Player</h1>
+        <p>Player de streaming com proxy integrado</p>
+    </div>
+    
+    <div class="player-container">
+        <div class="video-wrapper">
+            <video id="video" controls playsinline></video>
+        </div>
+        
+        <div class="controls">
+            <div class="url-display">
+                <span class="url-label">📡 Stream URL (via Proxy)</span>
+                <div id="currentUrl">{proxied_url}</div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-play" onclick="playStream()">
+                    ▶️ Play
+                </button>
+                <button class="btn btn-fullscreen" onclick="toggleFullscreen()">
+                    🔲 Fullscreen
+                </button>
+                <button class="btn btn-reload" onclick="reloadStream()">
+                    🔄 Reload
+                </button>
+            </div>
+            
+            <div id="status" class="status loading">
+                <div class="spinner"></div>
+                <span>Inicializando player...</span>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="statQuality">-</div>
+                    <div class="stat-label">Qualidade</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statBuffer">-</div>
+                    <div class="stat-label">Buffer (s)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statBitrate">-</div>
+                    <div class="stat-label">Bitrate</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statLatency">-</div>
+                    <div class="stat-label">Latência</div>
+                </div>
+            </div>
+            
+            <div class="url-input-container">
+                <input type="text" class="url-input" id="newUrl" placeholder="Cole outra URL M3U8 aqui...">
+                <button class="btn btn-play" onclick="loadNewUrl()" style="width: 100%;">
+                    📺 Carregar Nova URL
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>Proxy: <a href="http://{proxy_host}/">{proxy_host}</a> | 
+           <a href="http://{proxy_host}/oneplay">📋 Lista OnePlay</a></p>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const statusEl = document.getElementById('status');
+        const proxyHost = '{proxy_host}';
+        let hls = null;
+        let currentStreamUrl = '{proxied_url}';
+        
+        // Atualiza status
+        function setStatus(type, message) {{
+            statusEl.className = 'status ' + type;
+            if (type === 'loading') {{
+                statusEl.innerHTML = '<div class="spinner"></div><span>' + message + '</span>';
+            }} else if (type === 'playing') {{
+                statusEl.innerHTML = '✅ ' + message;
+            }} else if (type === 'error') {{
+                statusEl.innerHTML = '❌ ' + message;
+            }} else {{
+                statusEl.innerHTML = message;
+            }}
+        }}
+        
+        // Atualiza estatísticas
+        function updateStats() {{
+            if (hls) {{
+                const level = hls.levels[hls.currentLevel];
+                if (level) {{
+                    document.getElementById('statQuality').textContent = 
+                        level.height ? level.height + 'p' : 'Auto';
+                    document.getElementById('statBitrate').textContent = 
+                        level.bitrate ? (level.bitrate / 1000000).toFixed(1) + ' Mbps' : '-';
+                }}
+                
+                if (hls.latency !== undefined) {{
+                    document.getElementById('statLatency').textContent = 
+                        hls.latency.toFixed(1) + 's';
+                }}
+            }}
+            
+            // Buffer
+            if (video.buffered.length > 0) {{
+                const buffered = video.buffered.end(video.buffered.length - 1) - video.currentTime;
+                document.getElementById('statBuffer').textContent = buffered.toFixed(1);
+            }}
+        }}
+        
+        // Inicializa o player
+        function initPlayer(url) {{
+            currentStreamUrl = url;
+            document.getElementById('currentUrl').textContent = url;
+            
+            // Limpa player anterior
+            if (hls) {{
+                hls.destroy();
+                hls = null;
+            }}
+            
+            setStatus('loading', 'Carregando stream...');
+            
+            if (Hls.isSupported()) {{
+                hls = new Hls({{
+                    debug: false,
+                    enableWorker: true,
+                    lowLatencyMode: true,
+                    backBufferLength: 90,
+                    maxBufferLength: 30,
+                    maxMaxBufferLength: 60,
+                    maxBufferSize: 60 * 1000 * 1000,
+                    maxBufferHole: 0.5,
+                    fragLoadingTimeOut: 20000,
+                    fragLoadingMaxRetry: 6,
+                    fragLoadingRetryDelay: 1000,
+                    manifestLoadingTimeOut: 15000,
+                    manifestLoadingMaxRetry: 4,
+                    levelLoadingTimeOut: 15000,
+                    levelLoadingMaxRetry: 4,
+                }});
+                
+                hls.loadSource(url);
+                hls.attachMedia(video);
+                
+                hls.on(Hls.Events.MANIFEST_PARSED, function(event, data) {{
+                    console.log('Manifest parsed, levels:', data.levels.length);
+                    setStatus('loading', 'Manifest carregado, iniciando...');
+                    video.play().catch(e => console.log('Autoplay blocked:', e));
+                }});
+                
+                hls.on(Hls.Events.LEVEL_LOADED, function(event, data) {{
+                    console.log('Level loaded:', data.level);
+                }});
+                
+                hls.on(Hls.Events.FRAG_LOADED, function(event, data) {{
+                    updateStats();
+                }});
+                
+                hls.on(Hls.Events.ERROR, function(event, data) {{
+                    console.error('HLS Error:', data);
+                    if (data.fatal) {{
+                        switch(data.type) {{
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                setStatus('error', 'Erro de rede - tentando reconectar...');
+                                hls.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                setStatus('error', 'Erro de mídia - recuperando...');
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                setStatus('error', 'Erro fatal: ' + data.details);
+                                hls.destroy();
+                                break;
+                        }}
+                    }} else {{
+                        console.warn('Non-fatal error:', data.details);
+                    }}
+                }});
+                
+            }} else if (video.canPlayType('application/vnd.apple.mpegurl')) {{
+                // iOS Safari
+                video.src = url;
+                video.addEventListener('loadedmetadata', function() {{
+                    setStatus('loading', 'Iniciando reprodução...');
+                    video.play().catch(e => console.log('Autoplay blocked:', e));
+                }});
+            }} else {{
+                setStatus('error', 'HLS não suportado neste navegador');
+            }}
+        }}
+        
+        // Event listeners do video
+        video.addEventListener('playing', function() {{
+            setStatus('playing', 'Reproduzindo');
+            updateStats();
+        }});
+        
+        video.addEventListener('waiting', function() {{
+            setStatus('loading', 'Buffering...');
+        }});
+        
+        video.addEventListener('error', function(e) {{
+            setStatus('error', 'Erro no video: ' + (video.error?.message || 'desconhecido'));
+        }});
+        
+        video.addEventListener('timeupdate', function() {{
+            updateStats();
+        }});
+        
+        // Funções dos botões
+        function playStream() {{
+            video.play().catch(e => {{
+                console.log('Play error:', e);
+                setStatus('error', 'Clique no vídeo para iniciar');
+            }});
+        }}
+        
+        function toggleFullscreen() {{
+            if (document.fullscreenElement) {{
+                document.exitFullscreen();
+            }} else {{
+                const container = document.querySelector('.video-wrapper');
+                if (container.requestFullscreen) {{
+                    container.requestFullscreen();
+                }} else if (video.webkitEnterFullscreen) {{
+                    video.webkitEnterFullscreen();
+                }}
+            }}
+        }}
+        
+        function reloadStream() {{
+            initPlayer(currentStreamUrl);
+        }}
+        
+        function loadNewUrl() {{
+            const newUrl = document.getElementById('newUrl').value.trim();
+            if (newUrl) {{
+                // Cria URL proxiada
+                const proxiedUrl = 'http://' + proxyHost + '/hlsretry?url=' + encodeURIComponent(newUrl);
+                initPlayer(proxiedUrl);
+                document.getElementById('newUrl').value = '';
+            }}
+        }}
+        
+        // Inicia o player
+        initPlayer(currentStreamUrl);
+        
+        // Atualiza stats periodicamente
+        setInterval(updateStats, 2000);
+    </script>
+</body>
+</html>'''
+    
+    return html
 
 
 # ============== FUNÇÕES PARA OBTER IP LOCAL ==============
@@ -163,7 +712,7 @@ class CustomDNS:
     
     _instance = None
     _initialized = False
-    _cache = {}  # Cache de DNS em memória
+    _cache = {}
     
     def __new__(cls):
         if cls._instance is None:
@@ -175,7 +724,7 @@ class CustomDNS:
             return
         
         self.original_getaddrinfo = socket.getaddrinfo
-        self.debug_mode = True  # Ativar debug
+        self.debug_mode = True
         
         socket.getaddrinfo = self._resolver
         CustomDNS._initialized = True
@@ -248,11 +797,10 @@ class CustomDNS:
     
     def resolve(self, domain, dns_server):
         """Resolve domínio usando servidor DNS específico"""
-        # Verificar cache primeiro
         cache_key = f"{domain}:{dns_server}"
         if cache_key in self._cache:
             cached = self._cache[cache_key]
-            if time.time() - cached['time'] < 300:  # 5 min cache
+            if time.time() - cached['time'] < 300:
                 log_debug(f"DNS cache hit: {domain} -> {cached['ip']}")
                 return cached['ip']
         
@@ -263,14 +811,13 @@ class CustomDNS:
             query = self._build_dns_query(domain_clean)
             
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            s.settimeout(5)  # Aumentar timeout
+            s.settimeout(5)
             s.sendto(query, (dns_server, 53))
             data, _ = s.recvfrom(512)
             s.close()
             
             ip = self._parse_dns_response(data)
             if ip:
-                # Salvar no cache
                 self._cache[cache_key] = {'ip': ip, 'time': time.time()}
                 log_debug(f"DNS resolvido: {domain_clean} -> {ip}")
                 return ip
@@ -305,7 +852,6 @@ class CustomDNS:
         except Exception as e:
             log_error(f"Erro no resolver DNS para {host}: {e}")
         
-        # Fallback para resolver original
         try:
             result = self.original_getaddrinfo(host, port, family, type, proto, flags)
             log_debug(f"Fallback resolver para {host}: {result}")
@@ -465,7 +1011,7 @@ class HTTPResponse:
                     break
                 total_bytes += len(chunk)
                 chunk_count += 1
-                if chunk_count % 100 == 0:  # Log a cada 100 chunks
+                if chunk_count % 100 == 0:
                     log_debug(f"Streaming: {chunk_count} chunks, {total_bytes} bytes")
                 yield chunk
         except Exception as e:
@@ -546,8 +1092,6 @@ def rewrite_m3u_playlist(playlist_content, proxy_host):
             continue
         
         if line.startswith('http://') or line.startswith('https://'):
-            # FIX LISTA ONEPLAY
-            #proxied_url = f"http://{proxy_host}/hlsretry?url={quote(line)}"
             proxied_url = f"http://{proxy_host}/hlsretry?url={line}"
             rewritten_lines.append(proxied_url)
             url_count += 1
@@ -686,7 +1230,7 @@ def handle_request(client_socket, client_address, server_socket):
     """Processa requisição HTTP"""
     global LOCAL_IP
     
-    request_id = random_hex(8)  # ID único para esta requisição
+    request_id = random_hex(8)
     log_info(f"")
     log_info(f"{'='*60}")
     log_info(f"[REQ-{request_id}] Nova conexão de {client_address[0]}:{client_address[1]}")
@@ -695,7 +1239,7 @@ def handle_request(client_socket, client_address, server_socket):
     http_client = SimpleHTTPClient(timeout=15)
     
     try:
-        client_socket.settimeout(30)  # Aumentar timeout
+        client_socket.settimeout(30)
         
         log_debug(f"[REQ-{request_id}] Aguardando dados...")
         request_data = client_socket.recv(8192).decode('utf-8', errors='ignore')
@@ -745,6 +1289,7 @@ def handle_request(client_socket, client_address, server_socket):
                 "python_version": sys.version,
                 "endpoints": {
                     "status": f"http://{proxy_host}/",
+                    "player": f"http://{proxy_host}/player?url=<M3U8_URL>",
                     "oneplay": f"http://{proxy_host}/oneplay",
                     "test": f"http://{proxy_host}/test",
                     "hlsretry": f"http://{proxy_host}/hlsretry?url=<URL>",
@@ -758,6 +1303,183 @@ def handle_request(client_socket, client_address, server_socket):
                 response.encode('utf-8')
             )
             log_info(f"[REQ-{request_id}] Resposta enviada: 200 OK")
+    
+        # ===== ROTA: /app =====
+        elif path_part in ["/app", "/app/"]:            
+            try:
+                r_html = http_client.request('https://raw.githack.com/zoreu/stream_roku/main/home.html')
+                
+                if r_html.status_code == 200:
+                    html = r_html.content.decode('utf-8', errors='ignore')
+                    r_html.close()
+
+                html = html.replace("{{PROXY_HOST}}", proxy_host)
+
+                client_socket.sendall(
+                    b"HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n" +
+                    html.encode("utf-8")
+                )
+                return
+            except:
+                return
+        
+        # ===== ROTA: /player - Player HLS =====
+        elif path_part == "/player":
+            log_info(f"[REQ-{request_id}] Rota: /player")
+            
+            # Obtém a URL do M3U8 do parâmetro
+            url_param = query_params.get('url', [None])[0]
+            
+            if url_param:
+                try:
+                    url_param = unquote_plus(url_param)
+                except:
+                    pass
+                
+                log_info(f"[REQ-{request_id}] Player URL: {url_param}")
+                
+                # Gera o HTML do player
+                html_content = get_player_html(proxy_host, url_param)
+                
+                response_headers = (
+                    b"HTTP/1.1 200 OK\r\n"
+                    b"Content-Type: text/html; charset=utf-8\r\n"
+                    b"Cache-Control: no-cache\r\n"
+                    b"\r\n"
+                )
+                client_socket.sendall(response_headers + html_content.encode('utf-8'))
+                log_info(f"[REQ-{request_id}] Player HTML enviado: {len(html_content)} bytes")
+            else:
+                # Página sem URL - mostra formulário
+                html_no_url = f'''<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 OnePlay Player</title>
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            min-height: 100vh;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }}
+        .container {{
+            background: rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }}
+        h1 {{
+            font-size: 2rem;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }}
+        p {{ color: #94a3b8; margin-bottom: 30px; }}
+        .input-group {{
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }}
+        input {{
+            width: 100%;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 1rem;
+        }}
+        input:focus {{
+            outline: none;
+            border-color: #67e8f9;
+        }}
+        button {{
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }}
+        button:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }}
+        .examples {{
+            margin-top: 30px;
+            text-align: left;
+        }}
+        .examples h3 {{
+            color: #67e8f9;
+            margin-bottom: 10px;
+        }}
+        .example-url {{
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            word-break: break-all;
+            margin-bottom: 5px;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 OnePlay HLS Player</h1>
+        <p>Cole a URL do stream M3U8 para reproduzir</p>
+        
+        <form class="input-group" onsubmit="loadPlayer(event)">
+            <input type="text" id="m3u8Url" placeholder="https://exemplo.com/stream.m3u8" required>
+            <button type="submit">▶️ Reproduzir Stream</button>
+        </form>
+        
+        <div class="examples">
+            <h3>📡 Como usar:</h3>
+            <div class="example-url">
+                http://{proxy_host}/player?url=https://seu-stream.m3u8
+            </div>
+            <p style="margin-top: 15px; font-size: 0.85rem;">
+                O player irá automaticamente passar o stream pelo proxy para melhor compatibilidade.
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        function loadPlayer(e) {{
+            e.preventDefault();
+            const url = document.getElementById('m3u8Url').value;
+            if (url) {{
+                window.location.href = '/player?url=' + encodeURIComponent(url);
+            }}
+        }}
+    </script>
+</body>
+</html>'''
+                
+                response_headers = (
+                    b"HTTP/1.1 200 OK\r\n"
+                    b"Content-Type: text/html; charset=utf-8\r\n"
+                    b"\r\n"
+                )
+                client_socket.sendall(response_headers + html_no_url.encode('utf-8'))
+                log_info(f"[REQ-{request_id}] Player form HTML enviado")
         
         # ===== ROTA: /test - Teste de conectividade =====
         elif path_part == "/test":
@@ -905,7 +1627,6 @@ def handle_request(client_socket, client_address, server_socket):
                         del req_headers['Range']
                         log_debug(f"[REQ-{request_id}] Removido header Range")
                     
-                    # User-Agent handling
                     if AGENT_OF_CHAOS.get(cache_key) and not ('.ts' in url.lower() or '/hl' in url.lower()):
                         if change_user_agent:
                             req_headers['User-Agent'] = AGENT_OF_CHAOS[cache_key]
@@ -937,7 +1658,6 @@ def handle_request(client_socket, client_address, server_socket):
                         content_type = response.headers.get("Content-Type", "").lower()
                         log_debug(f"[REQ-{request_id}] Content-Type: {content_type}")
                         
-                        # Processar m3u8
                         if "mpegurl" in content_type or ".m3u8" in url.lower():
                             log_info(f"[REQ-{request_id}] Processando como M3U8")
                             base_url = url.rsplit('/', 1)[0]
@@ -953,7 +1673,6 @@ def handle_request(client_socket, client_address, server_socket):
                             log_info(f"[REQ-{request_id}] M3U8 enviado: {len(rewritten)} bytes")
                             return
                         
-                        # Ajustar URL de segmento TS
                         if '/hl' in url.lower() and '_' in url.lower() and '.ts' in url.lower():
                             try:
                                 seg_ = re.findall(r'_(.*?)\.ts', url)[0]
@@ -1010,7 +1729,6 @@ def handle_request(client_socket, client_address, server_socket):
                         attempts += 1
                         
                         if attempts >= max_retries:
-                            # Tentar cache
                             if any(x in url.lower() for x in ['.ts', '/hl', '.mp4']):
                                 cached_chunks = list(stream_cache(client_ip, url) or [])
                                 if cached_chunks:
@@ -1032,7 +1750,6 @@ def handle_request(client_socket, client_address, server_socket):
                     time.sleep(1)
                     attempts += 1
             
-            # Todas tentativas falharam
             log_error(f"[REQ-{request_id}] Todas as {max_retries} tentativas falharam. Último erro: {last_error}")
             
             error_response = json.dumps({
@@ -1090,7 +1807,10 @@ def print_banner(local_ip, port):
     print(f"  🐍 Python: {sys.version.split()[0]}")
     print(f"\n  📡 URLs de Acesso:")
     print(f"\n  🎬 Endpoints Disponíveis:")
-    print(f"     • http://{local_ip}:{port}/oneplay  - Lista IPTV com proxy")
+    print(f"     • http://{local_ip}:{port}/app - Site APP para navegador")    
+    print(f"     • http://{local_ip}:{port}/oneplay  - Lista IPTV com proxy")    
+    print(f"     • http://{local_ip}:{port}/player?url=<M3U8>  - Player HLS")
+
     print(f"     • /hlsretry?url=<URL>     - Proxy HLS com retry")
     print(f"     • /stop                   - Parar o servidor")
     print(f"\n  🔧 DEBUG MODE ATIVADO - Logs detalhados no console")
@@ -1108,11 +1828,9 @@ def start_proxy():
         print(f"\n❌ Proxy já está rodando na porta {PORT}")
         return False
     
-    # Obter IP local
     LOCAL_IP = get_local_ip()
     print(f"📍 IP Local detectado: {LOCAL_IP}")
     
-    # Inicializar DNS customizado
     print("🔧 Inicializando DNS customizado...")
     CustomDNS()
     
@@ -1129,7 +1847,6 @@ def start_proxy():
         server_socket.close()
         return False
     
-    # Exibir banner
     print_banner(LOCAL_IP, PORT)
     
     try:
