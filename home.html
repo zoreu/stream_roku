@@ -3,182 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OnePlay IPTV - 1.0.0</title>
+    <title>OnePlay IPTV</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>TV</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
     <style>
         :root { --bg:#0f0f1e; --card:#1a1a2e; --accent:#00d4ff; --text:#e0e0ff; --text-muted:#94a3b8; }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { 
-            font-family:'Segoe UI',sans-serif; 
-            background:linear-gradient(135deg,#0f0f1e,#16213e); 
-            color:var(--text); 
-            min-height:100vh; 
-            padding-top: 90px; /* ← ESSA LINHA É A CHAVE! */
-        }
+        body { font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#0f0f1e,#16213e); color:var(--text); min-height:100vh; padding-top:90px; }
+        .header { background:rgba(0,0,0,0.8); backdrop-filter:blur(12px); padding:15px; text-align:center; position:fixed; top:0; left:0; right:0; z-index:1000; border-bottom:1px solid rgba(255,255,255,0.15); box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+        .header h1 { font-size:1.9rem; background:linear-gradient(90deg,#00d4ff,#7c3aed); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .header p { font-size:0.9rem; color:#94a3b8; margin-top:5px; }
 
-        /* Header fixo no topo */
-        .header { 
-            background:rgba(0,0,0,0.8); 
-            backdrop-filter:blur(12px); 
-            padding:15px; 
-            text-align:center; 
-            position:fixed; 
-            top:0; left:0; right:0; 
-            z-index:1000; 
-            border-bottom:1px solid rgba(255,255,255,0.15);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        .back-btn {
+            position:fixed; top:80px; left:15px; z-index:999;
+            background:linear-gradient(135deg,#00d4ff,#7c3aed); color:white;
+            border:none; border-radius:50px; padding:12px 20px;
+            font-size:1rem; font-weight:600; cursor:pointer;
+            box-shadow:0 8px 25px rgba(0,212,255,.4);
+            display:none; align-items:center; gap:8px;
         }
-        .header h1 { 
-            font-size:1.9rem; 
-            background:linear-gradient(90deg,#00d4ff,#7c3aed); 
-            -webkit-background-clip:text; 
-            -webkit-text-fill-color:transparent; 
-        }
-        .header p { 
-            font-size:0.9rem; 
-            color:#94a3b8; 
-            margin-top:5px;
-        }
+        .back-btn i { font-size:1.3rem; }
 
-        .container { 
-            max-width:1400px; 
-            margin:0 auto; 
-            padding:20px; 
-        }
+        .container { max-width:1400px; margin:0 auto; padding:20px; }
+        .server-selector { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-bottom:30px; padding:15px; background:rgba(0,0,0,0.3); border-radius:16px; border:1px solid rgba(255,255,255,0.1); }
+        .server-btn { padding:12px 22px; background:var(--card); border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:white; cursor:pointer; transition:all .3s; font-weight:600; min-width:100px; }
+        .server-btn.active, .server-btn:hover { background:linear-gradient(135deg,#00d4ff,#7c3aed); transform:translateY(-3px); box-shadow:0 10px 25px rgba(0,212,255,.4); }
 
-        /* Botões de servidor agora aparecem abaixo do header */
-        .server-selector { 
-            display:flex; 
-            flex-wrap:wrap; 
-            gap:12px; 
-            justify-content:center; 
-            margin-bottom:30px; 
-            padding:15px 10px;
-            background:rgba(0,0,0,0.3);
-            border-radius:16px;
-            border:1px solid rgba(255,255,255,0.1);
-        }
-        .server-btn { 
-            padding:12px 22px; 
-            background:var(--card); 
-            border:1px solid rgba(255,255,255,0.15); 
-            border-radius:12px; 
-            color:white; 
-            cursor:pointer; 
-            transition:all .3s; 
-            font-weight:600;
-            min-width:100px;
-        }
-        .server-btn.active, .server-btn:hover { 
-            background:linear-gradient(135deg,#00d4ff,#7c3aed); 
-            transform:translateY(-3px); 
-            box-shadow:0 10px 25px rgba(0,212,255,.4); 
-        }
+        .categories, .channels-grid { display:grid; gap:20px; transition:all .4s ease; }
+        .categories { grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); }
+        .channels-grid { grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); display:none; }
 
-        /* Categorias e canais */
-        .categories { 
-            display:grid; 
-            grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); 
-            gap:18px; 
-            margin-bottom:40px; 
+        .category, .channel-card {
+            background:var(--card); border-radius:16px; overflow:hidden; cursor:pointer;
+            transition:all .3s; border:1px solid rgba(255,255,255,0.1); text-align:center;
         }
-        .category { 
-            background:var(--card); 
-            padding:22px 15px; 
-            border-radius:16px; 
-            text-align:center; 
-            cursor:pointer; 
-            transition:all .3s; 
-            border:1px solid rgba(255,255,255,0.1);
-        }
-        .category:hover { 
-            transform:translateY(-10px); 
-            background:rgba(0,212,255,.15); 
-            box-shadow:0 15px 30px rgba(0,212,255,.2);
-        }
-        .category i { font-size:2.8rem; margin-bottom:12px; color:var(--accent); }
-        .category small { display:block; margin-top:8px; color:#94a3b8; font-size:0.8rem; }
+        .category { padding:25px 15px; }
+        .category:hover { transform:translateY(-10px); background:rgba(0,212,255,.15); box-shadow:0 15px 30px rgba(0,212,255,.2); }
+        .category i { font-size:3rem; color:var(--accent); margin-bottom:12px; }
+        .category small { display:block; margin-top:8px; color:#94a3b8; font-size:0.85rem; }
 
-        .channels-grid { 
-            display:grid; 
-            grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); 
-            gap:22px; 
-        }
-        .channel-card { 
-            background:var(--card); 
-            border-radius:16px; 
-            overflow:hidden; 
-            cursor:pointer; 
-            transition:all .3s; 
-            border:1px solid rgba(255,255,255,0.1);
-        }
-        .channel-card:hover { 
-            transform:scale(1.06); 
-            box-shadow:0 20px 40px rgba(0,212,255,.3); 
-        }
-        .channel-logo { 
-            width:100%; 
-            height:120px; 
-            object-fit:contain; 
-            background:#000; 
-            padding:10px; 
-            background:#111;
-        }
-        .channel-name { 
-            padding:14px; 
-            text-align:center; 
-            font-weight:600; 
-            font-size:0.95rem; 
-            white-space:nowrap; 
-            overflow:hidden; 
-            text-overflow:ellipsis; 
-        }
+        .channel-card:hover { transform:scale(1.06); box-shadow:0 20px 40px rgba(0,212,255,.3); }
+        .channel-logo { width:100%; height:120px; object-fit:contain; background:#111; padding:10px; }
+        .channel-name { padding:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-        /* Player */
-        .player-container { 
-            position:fixed; top:0; left:0; right:0; bottom:0; 
-            background:rgba(0,0,0,.98); 
-            z-index:9999; 
-            display:none; 
-            flex-direction:column; 
-        }
-        .player-header { 
-            padding:15px 20px; 
-            background:rgba(0,0,0,.8); 
-            display:flex; 
-            justify-content:space-between; 
-            align-items:center; 
-            border-bottom:1px solid rgba(255,255,255,0.1);
-        }
-        .close-player { 
-            background:none; 
-            border:none; 
-            color:white; 
-            font-size:2.5rem; 
-            cursor:pointer; 
-        }
-        #iptv-video { 
-            width:100%; 
-            height:calc(100vh - 70px); 
-            background:black; 
-        }
-        .loading { 
-            position:absolute; 
-            top:50%; left:50%; 
-            transform:translate(-50%,-50%); 
-            font-size:1.6rem; 
-            color:#00d4ff; 
-            font-weight:600;
-        }
+        .player-container { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.98); z-index:9999; display:none; flex-direction:column; }
+        .player-header { padding:15px 20px; background:rgba(0,0,0,.8); display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); }
+        .close-player { background:none; border:none; color:white; font-size:2.5rem; cursor:pointer; }
+        #iptv-video { width:100%; height:calc(100vh - 70px); background:black; }
+        .loading { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:1.6rem; color:#00d4ff; font-weight:600; display:block; }
 
-        @media (max-width:768px) { 
-            body { padding-top: 100px; }
+        @media (max-width:768px) {
+            body { padding-top:100px; }
             .categories { grid-template-columns:repeat(3,1fr); }
             .channels-grid { grid-template-columns:repeat(2,1fr); }
-            .server-btn { font-size:0.9rem; padding:10px 16px; }
+            .back-btn { top:75px; padding:10px 16px; font-size:0.9rem; }
         }
     </style>
 </head>
@@ -189,12 +68,18 @@
         <p>Selecione uma lista para começar</p>
     </div>
 
+    <!-- Botão Voltar -->
+    <button class="back-btn" onclick="showCategories()">
+        <i class="fas fa-arrow-left"></i> Voltar
+    </button>
+
     <div class="container">
         <div class="server-selector" id="serverSelector"></div>
-        <div id="categories" class="categories" style="display:none;"></div>
-        <div id="channels" class="channels-grid" style="display:none;"></div>
+        <div id="categories" class="categories"></div>
+        <div id="channels" class="channels-grid"></div>
     </div>
 
+    <!-- Player -->
     <div id="playerContainer" class="player-container">
         <div class="player-header">
             <span id="playingChannel">Carregando...</span>
@@ -206,156 +91,130 @@
 
     <script>
         const proxyHost = "{{PROXY_HOST}}";
-    </script>
-    
-    <!-- Seu app.js continua o mesmo (100% compatível) -->
-<script>
-// === app.js incorporado diretamente (funciona 100% no QPython) ===
-const video = document.getElementById("iptv-video");
-const playerContainer = document.getElementById("playerContainer");
-const loading = document.getElementById("loading");
-const playingChannelEl = document.getElementById("playingChannel");
+        const video = document.getElementById("iptv-video");
+        const playerContainer = document.getElementById("playerContainer");
+        const loading = document.getElementById("loading");
+        const playingChannelEl = document.getElementById("playingChannel");
+        const backBtn = document.querySelector(".back-btn");
+        let hls = null;
+        let isPlayerOpen = false;
 
-let hls = null;
-let isPlayerOpen = false;
-
-function destroyPlayer() {
-    if (hls) { hls.destroy(); hls = null; }
-    video.pause();
-    video.removeAttribute("src");
-    video.load();
-    loading.style.display = "block";
-}
-
-function closePlayer() {
-    if (!isPlayerOpen) return;
-    isPlayerOpen = false;
-    playerContainer.style.display = "none";
-    destroyPlayer();
-    playingChannelEl.textContent = "Carregando...";
-}
-
-function playChannel(url, name) {
-    if (isPlayerOpen) destroyPlayer();
-    isPlayerOpen = true;
-    playerContainer.style.display = "flex";
-    playingChannelEl.textContent = name;
-
-    const proxyUrl = `http://${proxyHost}/hlsretry?url=${encodeURIComponent(url)}`;
-
-    if (Hls.isSupported()) {
-        hls = new Hls({ lowLatencyMode: true, backBufferLength: 90 });
-        hls.loadSource(proxyUrl);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            video.play().catch(() => {});
-            loading.style.display = "none";
-        });
-        hls.on(Hls.Events.ERROR, (event, data) => {
-            if (data.fatal) {
-                console.error("HLS Fatal error", data);
-                setTimeout(() => hls.loadSource(proxyUrl), 2000);
-            }
-        });
-    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-        video.src = proxyUrl;
-        video.play().catch(() => {});
-        loading.style.display = "none";
-    }
-}
-
-function loadList(id) {
-    const catDiv = document.getElementById("categories");
-    catDiv.style.display = "grid";
-    catDiv.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#00d4ff;font-size:1.5rem;"><i class="fas fa-spinner fa-spin"></i> Carregando lista...</div>';
-
-    fetch(`/oneplay?lista=lista${id}`)
-        .then(r => {
-            if (!r.ok) throw new Error("HTTP " + r.status);
-            return r.text();
-        })
-        .then(text => parseM3U(text))
-        .catch(err => {
-            console.error("Erro ao carregar lista:", err);
-            catDiv.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:50px;color:#ff6b6b;">
-                Falha ao carregar lista<br><small>${err.message}</small>
-            </div>`;
-        });
-}
-
-function parseM3U(content) {
-    const lines = content.split("\n");
-    const channels = [];
-    let current = null;
-
-    for (let line of lines) {
-        line = line.trim();
-        if (line.startsWith("#EXTINF:")) {
-            const nameMatch = line.match(/,(.*)$/);
-            const logoMatch = line.match(/tvg-logo="([^"]+)"/i);
-            const groupMatch = line.match(/group-title="([^"]+)"/i);
-
-            current = {
-                name: (nameMatch ? nameMatch[1] : "Canal sem nome").trim(),
-                logo: logoMatch ? logoMatch[1] : "",
-                group: groupMatch ? groupMatch[1].trim() : "Outros",
-                url: ""
-            };
-        } else if (line.startsWith("http") && current) {
-            current.url = line.trim();
-            channels.push(current);
-            current = null;
+        function destroyPlayer() {
+            if (hls) { hls.destroy(); hls = null; }
+            video.pause(); video.removeAttribute("src"); video.load();
+            loading.style.display = "block";
         }
-    }
 
-    window.allChannels = channels;
-    const groups = [...new Set(channels.map(c => c.group))].sort();
+        function closePlayer() {
+            isPlayerOpen = false;
+            playerContainer.style.display = "none";
+            destroyPlayer();
+            playingChannelEl.textContent = "Carregando...";
+        }
 
-    document.getElementById("categories").innerHTML = groups.map(g => `
-        <div class="category" onclick="showGroup('${g.replace(/'/g, "\\'")}')">
-            <i class="fas fa-tv"></i>
-            <div>${g}</div>
-            <small>${channels.filter(c => c.group === g).length} canais</small>
-        </div>
-    `).join("") || '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#94a3b8;">Nenhum canal encontrado</div>';
+        function playChannel(url, name) {
+            if (isPlayerOpen) destroyPlayer();
+            isPlayerOpen = true;
+            playerContainer.style.display = "flex";
+            playingChannelEl.textContent = name;
 
-    document.getElementById("categories").style.display = "grid";
-    document.getElementById("channels").style.display = "none";
-}
+            //const proxyUrl = `http://${proxyHost}/hlsretry?url=${encodeURIComponent(url)}`;
+            const proxyUrl = `${url}`;
 
-function showGroup(group) {
-    const filtered = window.allChannels.filter(c => c.group === group);
-    document.getElementById("channels").innerHTML = filtered.map(c => `
-        <div class="channel-card" onclick="playChannel('${c.url.replace(/'/g, "\\'")}', '${c.name.replace(/'/g, "\\'")}')">
-            <img src="${c.logo || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>TV</text></svg>'}" 
-                 class="channel-logo" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>TV</text></svg>'">
-            <div class="channel-name">${c.name}</div>
-        </div>
-    `).join("");
-    document.getElementById("channels").style.display = "grid";
-}
+            if (Hls.isSupported()) {
+                hls = new Hls({ lowLatencyMode: true, backBufferLength: 90 });
+                hls.loadSource(proxyUrl);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(()=>{}); loading.style.display = "none"; });
+            } else {
+                video.src = proxyUrl;
+                video.play().catch(()=>{});
+                loading.style.display = "none";
+            }
+        }
 
-// Cria os botões de Lista 01 a 10
-for (let i = 1; i <= 10; i++) {
-    const num = i.toString().padStart(2, "0");
-    const btn = document.createElement("div");
-    btn.className = "server-btn";
-    btn.textContent = "Lista " + num;
-    btn.onclick = () => {
-        document.querySelectorAll(".server-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        loadList(num);
-    };
-    if (i === 1) btn.classList.add("active");
-    document.getElementById("serverSelector").appendChild(btn);
-}
+        function showCategories() {
+            document.getElementById("categories").style.display = "grid";
+            document.getElementById("channels").style.display = "none";
+            backBtn.style.display = "none";
+            document.querySelector(".header p").textContent = "Selecione uma categoria";
+        }
 
-// Carrega a primeira lista automaticamente
-loadList("01");
+        function showChannels(group) {
+            const filtered = window.allChannels.filter(c => c.group === group);
+            document.getElementById("channels").innerHTML = filtered.map(c => `
+                <div class="channel-card" onclick="playChannel('${c.url.replace(/'/g, "\\'")}', '${c.name.replace(/'/g, "\\'")}')">
+                    <img src="${c.logo || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>TV</text></svg>'}"
+                         class="channel-logo" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>TV</text></svg>'">
+                    <div class="channel-name">${c.name}</div>
+                </div>
+            `).join("");
+            document.getElementById("categories").style.display = "none";
+            document.getElementById("channels").style.display = "grid";
+            backBtn.style.display = "flex";
+            document.querySelector(".header p").textContent = group;
+        }
 
-window.addEventListener("popstate", () => { if (isPlayerOpen) closePlayer(); });
-document.addEventListener("keydown", e => { if (e.key === "Escape" && isPlayerOpen) closePlayer(); });
-playerContainer.addEventListener("click", e => { if (e.target === playerContainer) closePlayer(); });
-</script>
+        function loadList(id) {
+            document.getElementById("categories").innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#00d4ff;font-size:1.6rem;"><i class="fas fa-spinner fa-spin"></i><br>Carregando lista...</div>';
+
+            fetch(`/oneplay?lista=lista${id}`)
+                .then(r => r.ok ? r.text() : Promise.reject("Lista não encontrada"))
+                .then(text => {
+                    const lines = text.split("\n");
+                    const channels = [];
+                    let current = null;
+                    for (let line of lines) {
+                        line = line.trim();
+                        if (line.startsWith("#EXTINF:")) {
+                            const name = (line.match(/,(.*)$/)?.[1] || "Canal").trim();
+                            const logo = line.match(/tvg-logo="([^"]+)"/i)?.[1] || "";
+                            const group = line.match(/group-title="([^"]+)"/i)?.[1]?.trim() || "Outros";
+                            current = { name, logo, group, url: "" };
+                        } else if (line.startsWith("http") && current) {
+                            current.url = line;
+                            channels.push(current);
+                            current = null;
+                        }
+                    }
+                    window.allChannels = channels;
+                    const groups = [...new Set(channels.map(c => c.group))].sort();
+
+                    document.getElementById("categories").innerHTML = groups.length ? groups.map(g => `
+                        <div class="category" onclick="showChannels('${g.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-tv"></i>
+                            <div>${g}</div>
+                            <small>${channels.filter(c => c.group === g).length} canais</small>
+                        </div>
+                    `).join("") : '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#94a3b8;">Nenhum canal encontrado</div>';
+
+                    showCategories();
+                })
+                .catch(err => {
+                    document.getElementById("categories").innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:#ff6b6b;">Erro ao carregar lista<br><small>${err}</small></div>`;
+                });
+        }
+
+        // Cria botões Lista 01 a 10
+        for (let i = 1; i <= 10; i++) {
+            const num = i.toString().padStart(2, "0");
+            const btn = document.createElement("div");
+            btn.className = "server-btn" + (i===1 ? " active" : "");
+            btn.textContent = "Lista " + num;
+            btn.onclick = () => {
+                document.querySelectorAll(".server-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                loadList(num);
+            };
+            document.getElementById("serverSelector").appendChild(btn);
+        }
+
+        loadList("01"); // Carrega lista 01 por padrão
+
+        // Fechar player
+        window.addEventListener("popstate", () => { if (isPlayerOpen) closePlayer(); });
+        document.addEventListener("keydown", e => { if (e.key === "Escape" && isPlayerOpen) closePlayer(); });
+        playerContainer.addEventListener("click", e => { if (e.target === playerContainer) closePlayer(); });
+    </script>
 </body>
 </html>
