@@ -209,6 +209,153 @@
     </script>
     
     <!-- Seu app.js continua o mesmo (100% compatível) -->
-    <script src="https://raw.githack.com/zoreu/stream_roku/main/app.js"></script>
+<script>
+// === app.js incorporado diretamente (funciona 100% no QPython) ===
+const video = document.getElementById("iptv-video");
+const playerContainer = document.getElementById("playerContainer");
+const loading = document.getElementById("loading");
+const playingChannelEl = document.getElementById("playingChannel");
+
+let hls = null;
+let isPlayerOpen = false;
+
+function destroyPlayer() {
+    if (hls) { hls.destroy(); hls = null; }
+    video.pause();
+    video.removeAttribute("src");
+    video.load();
+    loading.style.display = "block";
+}
+
+function closePlayer() {
+    if (!isPlayerOpen) return;
+    isPlayerOpen = false;
+    playerContainer.style.display = "none";
+    destroyPlayer();
+    playingChannelEl.textContent = "Carregando...";
+}
+
+function playChannel(url, name) {
+    if (isPlayerOpen) destroyPlayer();
+    isPlayerOpen = true;
+    playerContainer.style.display = "flex";
+    playingChannelEl.textContent = name;
+
+    const proxyUrl = `http://${proxyHost}/hlsretry?url=${encodeURIComponent(url)}`;
+
+    if (Hls.isSupported()) {
+        hls = new Hls({ lowLatencyMode: true, backBufferLength: 90 });
+        hls.loadSource(proxyUrl);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play().catch(() => {});
+            loading.style.display = "none";
+        });
+        hls.on(Hls.Events.ERROR, (event, data) => {
+            if (data.fatal) {
+                console.error("HLS Fatal error", data);
+                setTimeout(() => hls.loadSource(proxyUrl), 2000);
+            }
+        });
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = proxyUrl;
+        video.play().catch(() => {});
+        loading.style.display = "none";
+    }
+}
+
+function loadList(id) {
+    const catDiv = document.getElementById("categories");
+    catDiv.style.display = "grid";
+    catDiv.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#00d4ff;font-size:1.5rem;"><i class="fas fa-spinner fa-spin"></i> Carregando lista...</div>';
+
+    fetch(`/oneplay?lista=lista${id}`)
+        .then(r => {
+            if (!r.ok) throw new Error("HTTP " + r.status);
+            return r.text();
+        })
+        .then(text => parseM3U(text))
+        .catch(err => {
+            console.error("Erro ao carregar lista:", err);
+            catDiv.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:50px;color:#ff6b6b;">
+                Falha ao carregar lista<br><small>${err.message}</small>
+            </div>`;
+        });
+}
+
+function parseM3U(content) {
+    const lines = content.split("\n");
+    const channels = [];
+    let current = null;
+
+    for (let line of lines) {
+        line = line.trim();
+        if (line.startsWith("#EXTINF:")) {
+            const nameMatch = line.match(/,(.*)$/);
+            const logoMatch = line.match(/tvg-logo="([^"]+)"/i);
+            const groupMatch = line.match(/group-title="([^"]+)"/i);
+
+            current = {
+                name: (nameMatch ? nameMatch[1] : "Canal sem nome").trim(),
+                logo: logoMatch ? logoMatch[1] : "",
+                group: groupMatch ? groupMatch[1].trim() : "Outros",
+                url: ""
+            };
+        } else if (line.startsWith("http") && current) {
+            current.url = line.trim();
+            channels.push(current);
+            current = null;
+        }
+    }
+
+    window.allChannels = channels;
+    const groups = [...new Set(channels.map(c => c.group))].sort();
+
+    document.getElementById("categories").innerHTML = groups.map(g => `
+        <div class="category" onclick="showGroup('${g.replace(/'/g, "\\'")}')">
+            <i class="fas fa-tv"></i>
+            <div>${g}</div>
+            <small>${channels.filter(c => c.group === g).length} canais</small>
+        </div>
+    `).join("") || '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#94a3b8;">Nenhum canal encontrado</div>';
+
+    document.getElementById("categories").style.display = "grid";
+    document.getElementById("channels").style.display = "none";
+}
+
+function showGroup(group) {
+    const filtered = window.allChannels.filter(c => c.group === group);
+    document.getElementById("channels").innerHTML = filtered.map(c => `
+        <div class="channel-card" onclick="playChannel('${c.url.replace(/'/g, "\\'")}', '${c.name.replace(/'/g, "\\'")}')">
+            <img src="${c.logo || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>TV</text></svg>'}" 
+                 class="channel-logo" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>TV</text></svg>'">
+            <div class="channel-name">${c.name}</div>
+        </div>
+    `).join("");
+    document.getElementById("channels").style.display = "grid";
+}
+
+// Cria os botões de Lista 01 a 10
+for (let i = 1; i <= 10; i++) {
+    const num = i.toString().padStart(2, "0");
+    const btn = document.createElement("div");
+    btn.className = "server-btn";
+    btn.textContent = "Lista " + num;
+    btn.onclick = () => {
+        document.querySelectorAll(".server-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        loadList(num);
+    };
+    if (i === 1) btn.classList.add("active");
+    document.getElementById("serverSelector").appendChild(btn);
+}
+
+// Carrega a primeira lista automaticamente
+loadList("01");
+
+window.addEventListener("popstate", () => { if (isPlayerOpen) closePlayer(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && isPlayerOpen) closePlayer(); });
+playerContainer.addEventListener("click", e => { if (e.target === playerContainer) closePlayer(); });
+</script>
 </body>
 </html>
