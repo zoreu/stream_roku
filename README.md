@@ -1,4 +1,4 @@
-# DLNA ROKU + ONEPLAY
+# DLNA + ONEPLAY
 stream roku
 
 Tutorial:
