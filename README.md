@@ -33,7 +33,7 @@ exec(code)
 
 11 - abra um canal e coloque pra espelhar pra tv roku
 
-# NOVIDADE
+## NOVIDADE
 
 com a mais recente atualização é possivel usar a rota /app no navegador do web video cast pra mais praticidade
 
