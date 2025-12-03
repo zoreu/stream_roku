@@ -81,6 +81,34 @@ def log_exception(msg):
         logger.error(f"[{thread_name}] {msg}")
         logger.error(traceback.format_exc())
 
+def basename(p):
+    """Returns the final component of a pathname"""
+    i = p.rfind('/') + 1
+    return p[i:]
+
+def convert_to_m3u8(url):
+    if '|' in url:
+        url = url.split('|')[0]
+    elif '%7C' in url:
+        url = url.split('%7C')[0]
+    if not '.m3u8' in url and not '/hl' in url and int(url.count("/")) > 4 and not '.mp4' in url and not '.avi' in url:
+        parsed_url = urlparse(url)
+        try:
+            host_part1 = '%s://%s'%(parsed_url.scheme,parsed_url.netloc)
+            host_part2 = url.split(host_part1)[1]
+            url = host_part1 + '/live' + host_part2
+            file = basename(url)
+            if '.ts' in file:
+                file_new = file.replace('.ts', '.m3u8')
+                url = url.replace(file, file_new)
+            else:
+                url = url + '.m3u8'
+                # file_new = file + '.m3u8'
+                # new_url = url.replace(file, file_new)
+        except:
+            pass
+    return url 
+
 
 # ============== TEMPLATE HTML DO PLAYER ==============
 def get_player_html(proxy_host, m3u8_url):
@@ -1591,6 +1619,7 @@ def handle_request(client_socket, client_address, server_socket):
                     url = unquote_plus(url)
                 except:
                     pass
+                url = convert_to_m3u8(url)
             
             log_info(f"[REQ-{request_id}] URL alvo: {url}")
             
