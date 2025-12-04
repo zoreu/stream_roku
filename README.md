@@ -12,7 +12,7 @@ Tutorial:
 ```python
 import urllib.request
 
-url = 'https://raw.githack.com/zoreu/stream_roku/main/proxy_dlna.py'
+url = 'https://raw.githack.com/zoreu/stream_roku/main/dlna_completo.py'
 response = urllib.request.urlopen(url)
 code = response.read().decode('utf-8')
 exec(code)
