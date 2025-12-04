@@ -3,9 +3,9 @@ stream roku
 
 Tutorial:
 
-1 - baixe o web video cast na tv roku e no celular android
+1 - baixe o qpython ou pydroid 3 no celular
 
-2 - baixe o qpython 3L no celular android
+2 - vá em configurações, app, e em bateria deixa como não restrito pra pode ficar rodando em segundo plano
 
 3 - copie o codigo abaixo
 
@@ -17,26 +17,44 @@ response = urllib.request.urlopen(url)
 code = response.read().decode('utf-8')
 exec(code)
 ```
-4 - no qpython clique em Editor e cole o codigo
 
-5 - salve e dê o nome oneplay.py
+PARA QPYTHON:
 
-6 - clique no play para rodar o proxy
+ - no qpython clique em Editor e cole o codigo
 
-7 - no log do qpython decore o endereço do proxy em LISTA IPTV algo como http://192.168.0.2:8094/oneplay e minimize pra ficar rodando em segundo plano
+ - salve e dê o nome oneplay.py
 
-8 - no web video cast do celular clique nas lista de opções e clique em IPTV
+ - clique no play para rodar o proxy
 
-9 - clique no + e adicione a lista que você decorou algo como http://192.168.0.2:8094/oneplay
+ - no log do qpython decore o endereço do proxy como http://192.168.0.2:8094/app e minimize pra ficar rodando em segundo plano
 
-10 - dê o nome de oneplay e clique em salvar
+ - no navegador do celular abra a url como: http://192.168.0.2:8094/app (altere o ip para o do seu celular)
 
-11 - abra um canal e coloque pra espelhar pra tv roku
+ - abra um canal e clique em espelhar para tv, escolha seu dispositivo e pronto
 
-## NOVIDADE
+PARA PYDROID 3:
 
-com a mais recente atualização é possivel usar a rota /app no navegador do celular e espelhar direto do navegador do celular sem web video cast
+ - abra o pydroid 3, ignore algum anucio e coloque suas preferencias que ele pedir caso peça
+  
+ - cole o codigo abaixo:
 
-exemplo: http://192.168.0.2:8094/app se quiser pode adicionar esse endereço na sua tv
+```python
+import urllib.request
 
-OBS: de prefência conecte o celular no carregador pra não descarregar
+url = 'https://raw.githack.com/zoreu/stream_roku/main/dlna_completo.py'
+response = urllib.request.urlopen(url)
+code = response.read().decode('utf-8')
+exec(code)
+```
+- clique na pasta, depois save as, escolha internal storage depois download, logo em baixo dê o nome de oneplay.py e clique em save
+
+- agora basta clicar no play pra executar o codigo
+
+- no navegador do celular abra a url como: http://192.168.0.2:8094/app (altere o ip para o do seu celular)
+
+- abra um canal e clique em espelhar para tv, escolha seu dispositivo e pronto
+
+obs: sempre que abrir o pydroid 3 clique na pasta e clique em open, depois internal storage, download e escolha o script oneplay.py que salvou e agora pode executar o script
+
+
+
