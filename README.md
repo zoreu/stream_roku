@@ -35,7 +35,7 @@ exec(code)
 
 ## NOVIDADE
 
-com a mais recente atualização é possivel usar a rota /app no navegador do web video cast pra mais praticidade
+com a mais recente atualização é possivel usar a rota /app no navegador do celular e espelhar direto do navegador do celular sem web video cast
 
 exemplo: http://192.168.0.2:8094/app se quiser pode adicionar esse endereço na sua tv
 
