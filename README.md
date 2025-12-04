@@ -36,7 +36,7 @@ PARA PYDROID 3:
 
  - abra o pydroid 3, ignore algum anucio e coloque suas preferencias que ele pedir caso peça
   
- - cole o codigo abaixo:
+ - copie o codigo abaixo:
 
 ```python
 import urllib.request
@@ -46,6 +46,8 @@ response = urllib.request.urlopen(url)
 code = response.read().decode('utf-8')
 exec(code)
 ```
+- cole o codigo no pydroid 3
+  
 - clique na pasta, depois save as, escolha internal storage depois download, logo em baixo dê o nome de oneplay.py e clique em save
 
 - agora basta clicar no play pra executar o codigo
