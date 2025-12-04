@@ -5,7 +5,7 @@ Tutorial:
 
 1 - baixe o qpython ou pydroid 3 no celular
 
-2 - vá em configurações, app, e em bateria deixa como não restrito pra pode ficar rodando em segundo plano
+2 - vá em configurações, app, escolha o app que baixou e em bateria deixa como não restrito pra pode ficar rodando em segundo plano
 
 3 - copie o codigo abaixo
 
