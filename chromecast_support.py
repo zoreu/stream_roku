@@ -313,6 +313,7 @@ class ChromecastController:
             pass
         finally:
             self.sock = None
+print('chromecast importado)
 
 # Exemplo de uso (para teste)
 # if __name__ == "__main__":
