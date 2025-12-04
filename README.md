@@ -34,7 +34,7 @@ PARA QPYTHON:
 
 PARA PYDROID 3:
 
- - abra o pydroid 3, ignore algum anucio e coloque suas preferencias que ele pedir caso peça
+ - abra o pydroid 3, ignore algum anuncio e coloque suas preferencias que ele pedir caso peça
   
  - copie o codigo abaixo:
 
