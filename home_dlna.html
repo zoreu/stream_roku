@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OnePlay IPTV</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>TV</text></svg>">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root { --bg:#0f0f1e; --card:#1a1a2e; --accent:#00d4ff; --text:#e0e0ff; --text-muted:#94a3b8; 
+                --border:#2a2a4a; --success:#10b981; --error:#ef4444; --warning:#f59e0b; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#0f0f1e,#16213e); color:var(--text); min-height:100vh; padding-top:90px; }
+        .header { background:rgba(0,0,0,0.8); backdrop-filter:blur(12px); padding:15px; text-align:center; position:fixed; top:0; left:0; right:0; z-index:1000; border-bottom:1px solid rgba(255,255,255,0.15); box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+        .header h1 { font-size:1.9rem; background:linear-gradient(90deg,#00d4ff,#7c3aed); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .header p { font-size:0.9rem; color:#94a3b8; margin-top:5px; }
+
+        .back-btn {
+            position: fixed;
+            top: 12px;           
+            left: 15px;
+            z-index: 1001;       
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.5);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 212, 255, 0.6);
+        }
+        
+        .back-btn i {
+            font-size: 1.4rem;
+        }
+
+        .container { max-width:1400px; margin:0 auto; padding:20px; }
+        .server-selector { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-bottom:30px; padding:15px; background:rgba(0,0,0,0.3); border-radius:16px; border:1px solid rgba(255,255,255,0.1); }
+        .server-btn { padding:12px 22px; background:var(--card); border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:white; cursor:pointer; transition:all .3s; font-weight:600; min-width:100px; }
+        .server-btn.active, .server-btn:hover { background:linear-gradient(135deg,#00d4ff,#7c3aed); transform:translateY(-3px); box-shadow:0 10px 25px rgba(0,212,255,.4); }
+
+        .categories, .channels-grid { display:grid; gap:20px; transition:all .4s ease; }
+        .categories { grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); }
+        .channels-grid { grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); display:none; }
+
+        .category, .channel-card {
+            background:var(--card); border-radius:16px; overflow:hidden; cursor:pointer;
+            transition:all .3s; border:1px solid rgba(255,255,255,0.1); text-align:center;
+        }
+        .category { padding:25px 15px; }
+        .category:hover { transform:translateY(-10px); background:rgba(0,212,255,.15); box-shadow:0 15px 30px rgba(0,212,255,.2); }
+        .category i { font-size:3rem; color:var(--accent); margin-bottom:12px; }
+        .category small { display:block; margin-top:8px; color:#94a3b8; font-size:0.85rem; }
+
+        .channel-card:hover { transform:scale(1.06); box-shadow:0 20px 40px rgba(0,212,255,.3); }
+        .channel-logo { width:100%; height:120px; object-fit:contain; background:#111; padding:10px; }
+        .channel-name { padding:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+        .player-container { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.98); z-index:9999; display:none; flex-direction:column; }
+        .player-header { padding:15px 20px; background:rgba(0,0,0,.8); display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); }
+        .close-player { background:none; border:none; color:white; font-size:2.5rem; cursor:pointer; }
+        #iptv-video { width:100%; height:calc(100vh - 70px); background:black; }
+        .loading { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:1.6rem; color:#00d4ff; font-weight:600; display:block; }
+
+        .cast-btn { background:linear-gradient(135deg,var(--accent),#4f46e5);color:#fff; padding:10px 15px; border-radius:8px; font-size:0.9rem; margin-left:10px; }
+
+        /* DLNA Modal Styles */
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(4px);justify-content:center;align-items:center;z-index:1000;padding:20px}
+        .modal-overlay.active{display:flex}
+        .modal{background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:450px;max-height:80vh;overflow:hidden}
+        .modal-header{padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .modal-close{background:none;border:none;color:var(--text-muted);font-size:1.5rem;cursor:pointer}
+        .modal-body{padding:20px;max-height:400px;overflow-y:auto}
+        .device-list{list-style:none}
+        .device-item{padding:15px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .2s}
+        .device-item:hover{border-color:var(--accent);transform:translateX(4px)}
+        .device-item.selected{border-color:var(--success);background:rgba(16,185,129,.1)}
+        .device-icon{font-size:1.8rem}
+        .device-name{font-weight:600}
+        .device-details{font-size:.8rem;color:var(--text-muted);margin-top:2px}
+        .device-badge{display:inline-block;padding:2px 8px;background:rgba(99,102,241,.2);border-radius:6px;font-size:.65rem;color:var(--accent);margin-left:8px}
+        .loading{text-align:center;padding:40px;color:var(--text-muted)}
+        .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 15px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .tips{margin-top:15px;padding:12px;background:rgba(245,158,11,.1);border-radius:8px;font-size:.8rem}
+        .tips h4{color:var(--warning);margin-bottom:8px}
+        .tips ul{margin-left:16px}
+        .toast-container{position:fixed;top:20px;right:20px;z-index:2000}
+        .toast{padding:14px 20px;border-radius:10px;margin-bottom:8px;display:flex;align-items:center;gap:10px;animation:slideIn .3s;color:#fff}
+        @keyframes slideIn{from{opacity:0;transform:translateX(50px)}}
+        .toast.success{background:var(--success)}
+        .toast.error{background:var(--error)}
+        .toast.info{background:var(--accent)}
+        .toast.warning{background:var(--warning)}
+        /* DLNA Status */
+        .status{margin-top:20px;padding:20px;background:rgba(255,255,255,.03);border-radius:12px;border:1px solid var(--border);display:none}
+        .status.active{display:block}
+        .status-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+        .status-badge{padding:4px 12px;border-radius:12px;font-size:.75rem;font-weight:600;text-transform:uppercase}
+        .status-badge.playing{background:rgba(16,185,129,.2);color:var(--success)}
+        .status-badge.paused{background:rgba(245,158,11,.2);color:var(--warning)}
+        .status-badge.stopped{background:rgba(148,163,184,.2);color:var(--text-muted)}
+        .status-row{display:flex;justify-content:space-between;padding:6px 0;font-size:.85rem}
+        .status-row span:first-child{color:var(--text-muted)}
+        .status-controls{display:flex;gap:8px;margin-top:15px}
+        .status-controls .btn{flex:1;padding:10px;font-size:.85rem}
+
+        @media (max-width:768px) {
+            body { padding-top:100px; }
+            .categories { grid-template-columns:repeat(3,1fr); }
+            .channels-grid { grid-template-columns:repeat(2,1fr); }
+            .back-btn { top:75px; padding:10px 16px; font-size:0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>OnePlay IPTV</h1>
+        <p>Selecione uma lista para começar</p>
+    </div>
+
+    <!-- Botão Voltar -->
+    <button class="back-btn" onclick="showCategories()">
+        <i class="fas fa-arrow-left"></i> Voltar
+    </button>
+
+    <div class="container">
+        <div class="server-selector" id="serverSelector"></div>
+        <div id="categories" class="categories"></div>
+        <div id="channels" class="channels-grid"></div>
+    </div>
+
+    <!-- Player -->
+    <div id="playerContainer" class="player-container">
+        <div class="player-header">
+            <span id="playingChannel">Carregando...</span>
+            <button class="cast-btn" onclick="openCastModal()">📡 Espelhar para TV</button>
+            <button class="close-player" onclick="closePlayer()">×</button>
+        </div>
+        <video id="iptv-video" controls playsinline></video>
+        <div class="loading" id="loading">Carregando stream...</div>
+        <!-- Hidden input for DLNA -->
+        <input type="hidden" id="url-input">
+        <!-- DLNA Status -->
+        <div class="status" id="status">
+            <div class="status-header">
+                <strong>📡 Transmitindo</strong>
+                <span class="status-badge playing" id="status-badge">ATIVO</span>
+            </div>
+            <div class="status-row"><span>Dispositivo:</span><span id="s-device">-</span></div>
+            <div class="status-row"><span>Tipo:</span><span id="s-type">-</span></div>
+            <div class="status-controls">
+                <button class="btn btn-success" onclick="control('play')">▶️</button>
+                <button class="btn btn-warning" onclick="control('pause')">⏸️</button>
+                <button class="btn btn-danger" onclick="control('stop')">⏹️</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DLNA Modal -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>📱 Selecione um Dispositivo</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body" id="devices"></div>
+        </div>
+    </div>
+    
+    <div class="toast-container" id="toasts"></div>
+
+    <script>
+        const proxyHost = "{{PROXY_HOST}}";
+        const video = document.getElementById("iptv-video");
+        const playerContainer = document.getElementById("playerContainer");
+        const loading = document.getElementById("loading");
+        const playingChannelEl = document.getElementById("playingChannel");
+        const backBtn = document.querySelector(".back-btn");
+        let hls = null;
+        let isPlayerOpen = false;
+        let currentChannelUrl = '';
+        let currentChannelName = '';
+
+        function destroyPlayer() {
+            if (hls) { hls.destroy(); hls = null; }
+            video.pause(); video.removeAttribute("src"); video.load();
+            loading.style.display = "block";
+        }
+
+        function closePlayer() {
+            isPlayerOpen = false;
+            playerContainer.style.display = "none";
+            destroyPlayer();
+            playingChannelEl.textContent = "Carregando...";
+            document.getElementById('status').classList.remove('active');
+        }
+
+        function playChannel(url, name) {
+            if (isPlayerOpen) destroyPlayer();
+            isPlayerOpen = true;
+            playerContainer.style.display = "flex";
+            playingChannelEl.textContent = name;
+            currentChannelUrl = url;
+            currentChannelName = name;
+            document.getElementById('url-input').value = url;
+
+            const proxyUrl = `${url}`;  // Already proxiado if needed
+
+            if (Hls.isSupported()) {
+                hls = new Hls({ lowLatencyMode: true, backBufferLength: 90 });
+                hls.loadSource(proxyUrl);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => { loading.style.display = "none"; });  // No autoplay
+            } else {
+                video.src = proxyUrl;
+                loading.style.display = "none";  // No autoplay
+            }
+        }
+
+        function showCategories() {
+            document.getElementById("categories").style.display = "grid";
+            document.getElementById("channels").style.display = "none";
+            backBtn.style.display = "none";
+            document.querySelector(".header p").textContent = "Selecione uma categoria";
+        }
+
+        function showChannels(group) {
+            const filtered = window.allChannels.filter(c => c.group === group);
+            document.getElementById("channels").innerHTML = filtered.map(c => `
+                <div class="channel-card" onclick="playChannel('${c.url.replace(/'/g, "\\'")}', '${c.name.replace(/'/g, "\\'")}')">
+                    <img src="${c.logo || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>TV</text></svg>'}"
+                         class="channel-logo" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>TV</text></svg>'">
+                    <div class="channel-name">${c.name}</div>
+                </div>
+            `).join("");
+            document.getElementById("categories").style.display = "none";
+            document.getElementById("channels").style.display = "grid";
+            backBtn.style.display = "flex";
+            document.querySelector(".header p").textContent = group;
+        }
+
+        function loadList(id) {
+            document.getElementById("categories").innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#00d4ff;font-size:1.6rem;"><i class="fas fa-spinner fa-spin"></i><br>Carregando lista...</div>';
+
+            fetch(`/oneplay?lista=lista${id}`)
+                .then(r => r.ok ? r.text() : Promise.reject("Lista não encontrada"))
+                .then(text => {
+                    const lines = text.split("\n");
+                    const channels = [];
+                    let current = null;
+                    for (let line of lines) {
+                        line = line.trim();
+                        if (line.startsWith("#EXTINF:")) {
+                            const name = (line.match(/,(.*)$/)?.[1] || "Canal").trim();
+                            const logo = line.match(/tvg-logo="([^"]+)"/i)?.[1] || "";
+                            const group = line.match(/group-title="([^"]+)"/i)?.[1]?.trim() || "Outros";
+                            current = { name, logo, group, url: "" };
+                        } else if (line.startsWith("http") && current) {
+                            current.url = line;
+                            channels.push(current);
+                            current = null;
+                        }
+                    }
+                    window.allChannels = channels;
+                    const groups = [...new Set(channels.map(c => c.group))].sort();
+
+                    document.getElementById("categories").innerHTML = groups.length ? groups.map(g => `
+                        <div class="category" onclick="showChannels('${g.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-tv"></i>
+                            <div>${g}</div>
+                            <small>${channels.filter(c => c.group === g).length} canais</small>
+                        </div>
+                    `).join("") : '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#94a3b8;">Nenhum canal encontrado</div>';
+
+                    showCategories();
+                })
+                .catch(err => {
+                    document.getElementById("categories").innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:#ff6b6b;">Erro ao carregar lista<br><small>${err}</small></div>`;
+                });
+        }
+
+        // Cria botões Lista 01 a 10
+        for (let i = 1; i <= 10; i++) {
+            const num = i.toString().padStart(2, "0");
+            const btn = document.createElement("div");
+            btn.className = "server-btn" + (i===1 ? " active" : "");
+            btn.textContent = "Lista " + num;
+            btn.onclick = () => {
+                document.querySelectorAll(".server-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                loadList(num);
+            };
+            document.getElementById("serverSelector").appendChild(btn);
+        }
+
+        loadList("01"); // Carrega lista 01 por padrão
+
+        // Fechar player
+        window.addEventListener("popstate", () => { if (isPlayerOpen) closePlayer(); });
+        document.addEventListener("keydown", e => { if (e.key === "Escape" && isPlayerOpen) closePlayer(); });
+        playerContainer.addEventListener("click", e => { if (e.target === playerContainer) closePlayer(); });
+
+        // DLNA Script Integration
+        let devices=[],selected=null,controlUrl=null,streamId=null,active=false;
+        
+        function toast(msg,type='info'){const t=document.createElement('div');t.className='toast '+type;t.innerHTML='<span>'+msg+'</span>';document.getElementById('toasts').appendChild(t);setTimeout(()=>t.remove(),4000)}
+        
+        function openCastModal(){const url = currentChannelUrl;if(!url){toast('Nenhuma URL selecionada!','error');return}document.getElementById('url-input').value = url;document.getElementById('modal').classList.add('active');search()}
+        function closeModal(){document.getElementById('modal').classList.remove('active')}
+        
+        async function search(){
+            document.getElementById('devices').innerHTML='<div class="loading"><div class="spinner"></div><p>Buscando...</p></div>';
+            try{
+                const r=await fetch('/api/discover');
+                const d=await r.json();
+                if(d.success&&d.devices.length>0){devices=d.devices;render()}
+                else{document.getElementById('devices').innerHTML='<div class="loading"><p>Nenhum dispositivo</p><div class="tips"><h4>💡 Dicas:</h4><ul><li>TV e PC na mesma rede</li><li>Ative DLNA na TV</li><li>Desative firewall</li></ul></div><button class="btn btn-secondary" style="margin-top:15px" onclick="search()">🔄 Buscar</button></div>'}
+            }catch(e){toast('Erro','error')}
+        }
+        
+        function render(){
+            let h='<ul class="device-list">';
+            devices.forEach((d,i)=>{h+='<li class="device-item" onclick="sel('+i+')"><span class="device-icon">'+(d.tv_type.includes('lg')?'📺':d.tv_type.includes('roku')?'🟣':'📺')+'</span><div><div class="device-name">'+esc(d.name)+'<span class="device-badge">'+label(d.tv_type)+'</span></div><div class="device-details">'+esc(d.manufacturer)+' • '+d.ip+'</div></div></li>'});
+            h+='</ul><button class="btn btn-secondary" style="margin-top:10px" onclick="search()">🔄 Atualizar</button>';
+            document.getElementById('devices').innerHTML=h
+        }
+        
+        function label(t){if(t.includes('lg'))return'LG WebOS';if(t.includes('samsung'))return'Samsung';if(t.includes('roku'))return'Roku';if(t.includes('android'))return'Android TV';return'DLNA'}
+        
+        async function sel(i){
+            const d=devices[i];const url=document.getElementById('url-input').value.trim();
+            toast('Conectando...','info');
+            try{
+                const r=await fetch('/api/cast',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,control_url:d.control_url,device_name:d.name,tv_type:d.tv_type})});
+                const data=await r.json();
+                if(data.success){selected=d;controlUrl=d.control_url;streamId=data.stream_id;active=true;closeModal();updateUI();toast('Transmitindo!','success')}
+                else{toast('Erro: '+data.error,'error')}
+            }catch(e){toast('Erro','error')}
+        }
+        
+        async function stopAll(){
+            if(controlUrl)try{await fetch('/api/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'stop',control_url:controlUrl})})}catch(e){}
+            if(streamId)try{await fetch('/api/stop-stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stream_id:streamId})})}catch(e){}
+            reset();toast('Parado','success')
+        }
+        
+        function newStream(){stopAll();document.getElementById('url-input').value=''}
+        
+        async function control(action){
+            if(!controlUrl)return;
+            try{await fetch('/api/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,control_url:controlUrl})});
+            const b=document.getElementById('status-badge');
+            if(action==='stop'){b.textContent='PARADO';b.className='status-badge stopped'}
+            else if(action==='pause'){b.textContent='PAUSADO';b.className='status-badge paused'}
+            else{b.textContent='ATIVO';b.className='status-badge playing'}}catch(e){}
+        }
+        
+        function updateUI(){
+            document.getElementById('status').classList.toggle('active',active);
+            if(active){document.getElementById('s-device').textContent=selected?.name||'-';document.getElementById('s-type').textContent=label(selected?.tv_type||'')}
+        }
+        
+        function reset(){selected=null;controlUrl=null;streamId=null;active=false;updateUI()}
+        function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+        
+        document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+    </script>
+</body>
+</html>
