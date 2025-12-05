@@ -1,5 +1,5 @@
 # DLNA + ONEPLAY
-stream roku
+stream nas tvs ROKU/LG/SANSUNG/PHILIPS/TCL/PHILCO
 
 Tutorial:
 
