@@ -58,5 +58,7 @@ exec(code)
 
 obs: sempre que abrir o pydroid 3 clique na pasta e clique em open, depois internal storage, download e escolha o script oneplay.py que salvou e agora pode executar o script
 
+se não funcionar pra espelhar pela propria pagina use o web video cast no celular
+
 
 
