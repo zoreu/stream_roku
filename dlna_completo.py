@@ -63,6 +63,167 @@ active_sessions_lock = threading.Lock()
 active_chromecast_controllers = {}
 CHROMECAST_ENABLED = False
 
+# ============== DNS CUSTOMIZADO ==============
+class CustomDNS:
+    """Resolvedor DNS customizado com cache persistente"""
+    
+    DNS_SERVERS = [
+        '208.67.222.222',  # OpenDNS
+        '208.67.220.220',  # OpenDNS
+        '1.1.1.1',         # Cloudflare
+        '8.8.8.8',         # Google DNS
+    ]
+    
+    _instance = None
+    _initialized = False
+    _cache = {}
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+    
+    def __init__(self):
+        if CustomDNS._initialized:
+            return
+        
+        self.original_getaddrinfo = socket.getaddrinfo
+        self.debug_mode = True
+        
+        socket.getaddrinfo = self._resolver
+        CustomDNS._initialized = True
+        print("CustomDNS inicializado com debug ativado")
+    
+    @staticmethod
+    def is_valid_ipv4(ip):
+        try:
+            socket.inet_aton(ip)
+            return True
+        except socket.error:
+            return False
+    
+    @staticmethod
+    def is_valid_ipv6(ip):
+        try:
+            socket.inet_pton(socket.AF_INET6, ip)
+            return True
+        except (socket.error, OSError):
+            return False
+    
+    def _build_dns_query(self, domain):
+        """Constrói query DNS"""
+        transaction_id = random.randint(0, 65535)
+        flags = 0x0100
+        questions = 1
+        header = struct.pack('>HHHHHH', transaction_id, flags, questions, 0, 0, 0)
+        
+        qname = b''.join(
+            bytes([len(part)]) + part.encode() 
+            for part in domain.split('.')
+        ) + b'\x00'
+        
+        qtype = 1
+        qclass = 1
+        question = qname + struct.pack('>HH', qtype, qclass)
+        
+        return header + question
+    
+    def _parse_dns_response(self, data):
+        """Parse resposta DNS"""
+        try:
+            answer_count = struct.unpack(">H", data[6:8])[0]
+            offset = 12
+            
+            while data[offset] != 0:
+                offset += 1
+            offset += 5
+            
+            for _ in range(answer_count):
+                if data[offset] & 0xC0 == 0xC0:
+                    offset += 2
+                else:
+                    while data[offset] != 0:
+                        offset += 1
+                    offset += 1
+                
+                rtype, rclass, ttl, rdlength = struct.unpack(">HHIH", data[offset:offset+10])
+                offset += 10
+                
+                if rtype == 1 and rdlength == 4:
+                    ip_parts = struct.unpack(">BBBB", data[offset:offset+4])
+                    return ".".join(map(str, ip_parts))
+                
+                offset += rdlength
+        except Exception as e:
+            print(f"Erro ao parsear resposta DNS: {e}")
+        
+        return None
+    
+    def resolve(self, domain, dns_server):
+        """Resolve domínio usando servidor DNS específico"""
+        cache_key = f"{domain}:{dns_server}"
+        if cache_key in self._cache:
+            cached = self._cache[cache_key]
+            if time.time() - cached['time'] < 300:
+                print(f"DNS cache hit: {domain} -> {cached['ip']}")
+                return cached['ip']
+        
+        try:
+            domain_clean = domain.strip('.')
+            print(f"Resolvendo DNS: {domain_clean} via {dns_server}")
+            
+            query = self._build_dns_query(domain_clean)
+            
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.settimeout(5)
+            s.sendto(query, (dns_server, 53))
+            data, _ = s.recvfrom(512)
+            s.close()
+            
+            ip = self._parse_dns_response(data)
+            if ip:
+                self._cache[cache_key] = {'ip': ip, 'time': time.time()}
+                print(f"DNS resolvido: {domain_clean} -> {ip}")
+                return ip
+            else:
+                print(f"DNS sem resposta para: {domain_clean}")
+        except socket.timeout:
+            print(f"DNS timeout para {domain} via {dns_server}")
+        except Exception as e:
+            print(f"DNS erro para {domain} via {dns_server}: {e}")
+        
+        return None
+    
+    def _resolver(self, host, port, family=0, type=0, proto=0, flags=0):
+        """Substitui socket.getaddrinfo"""
+        print(f"Resolver chamado para: {host}:{port}")
+        
+        try:
+            if self.is_valid_ipv4(host):
+                print(f"Host já é IPv4: {host}")
+                return [(socket.AF_INET, socket.SOCK_STREAM, 6, '', (host, port))]
+            if self.is_valid_ipv6(host):
+                print(f"Host já é IPv6: {host}")
+                return [(socket.AF_INET6, socket.SOCK_STREAM, 6, '', (host, port, 0, 0))]
+            
+            for dns_server in self.DNS_SERVERS:
+                ip = self.resolve(host, dns_server)
+                if ip:
+                    print(f"Resolvido {host} -> {ip} via {dns_server}")
+                    return [(socket.AF_INET, socket.SOCK_STREAM, 6, '', (ip, port))]
+            
+            print(f"Todos DNS falharam para {host}, usando fallback")
+        except Exception as e:
+            print(f"Erro no resolver DNS para {host}: {e}")
+        
+        try:
+            result = self.original_getaddrinfo(host, port, family, type, proto, flags)
+            print(f"Fallback resolver para {host}: {result}")
+            return result
+        except Exception as e:
+            print(f"Fallback também falhou para {host}: {e}")
+            raise
+
 # ============== HTTP CLIENT SIMPLES ==============
 class SimpleHTTPClient:
     """Cliente HTTP simples sem dependências externas"""
@@ -1655,6 +1816,9 @@ def start_proxy():
     
     LOCAL_IP = get_local_ip()
     print(f"📍 IP Local detectado: {LOCAL_IP}")
+
+    print("🔧 Inicializando DNS customizado...")
+    CustomDNS()    
     
     if CHROMECAST_ENABLED:
         print("✅ Chromecast: Habilitado")
