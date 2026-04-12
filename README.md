@@ -11,10 +11,16 @@ Tutorial:
 
 ```python
 import urllib.request
-
+import ssl
 url = 'https://raw.githack.com/zoreu/stream_roku/main/dlna_completo.py'
-response = urllib.request.urlopen(url)
-code = response.read().decode('utf-8')
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+}
+req = urllib.request.Request(url, headers=headers)
+# ignora verificação SSL
+context = ssl._create_unverified_context()
+with urllib.request.urlopen(req, context=context) as response:
+    code = response.read().decode('utf-8')
 exec(code)
 ```
 
@@ -40,12 +46,15 @@ PARA PYDROID 3:
 
 ```python
 import urllib.request
+import ssl
 url = 'https://raw.githack.com/zoreu/stream_roku/main/dlna_completo.py'
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 }
 req = urllib.request.Request(url, headers=headers)
-with urllib.request.urlopen(req) as response:
+# ignora verificação SSL
+context = ssl._create_unverified_context()
+with urllib.request.urlopen(req, context=context) as response:
     code = response.read().decode('utf-8')
 exec(code)
 ```
