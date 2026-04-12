@@ -40,10 +40,13 @@ PARA PYDROID 3:
 
 ```python
 import urllib.request
-
 url = 'https://raw.githack.com/zoreu/stream_roku/main/dlna_completo.py'
-response = urllib.request.urlopen(url)
-code = response.read().decode('utf-8')
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+}
+req = urllib.request.Request(url, headers=headers)
+with urllib.request.urlopen(req) as response:
+    code = response.read().decode('utf-8')
 exec(code)
 ```
 - cole o codigo no pydroid 3
